@@ -13,6 +13,9 @@ public class Detection
 
 public class DetectedProductItem
 {
+    [System.Text.Json.Serialization.JsonPropertyName("producto")]
     public string Producto { get; set; } = string.Empty;
+
+    [System.Text.Json.Serialization.JsonPropertyName("cantidad_estimada")]
     public int CantidadEstimada { get; set; }
 }

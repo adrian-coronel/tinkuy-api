@@ -30,5 +30,7 @@ node_modules/
 *.tmp
 *.pdb
 *.cachefile
+# Secrets — nunca subir al repo
+appsettings.Development.json
 # Rider IDE files
 idea/
