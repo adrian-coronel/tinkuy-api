@@ -12,6 +12,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Detection> Detections => Set<Detection>();
     public DbSet<User> Users => Set<User>();
     public DbSet<Reservation> Reservations => Set<Reservation>();
+    public DbSet<Notification> Notifications => Set<Notification>();
 
     protected override void OnModelCreating(ModelBuilder model)
     {
@@ -83,6 +84,18 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             e.Property(r => r.CreatedAt).HasDefaultValueSql("now()");
             e.HasOne(r => r.User).WithMany(u => u.Reservations).HasForeignKey(r => r.UserId);
             e.HasOne(r => r.Inventory).WithMany(i => i.Reservations).HasForeignKey(r => r.InventoryId);
+        });
+
+        model.Entity<Notification>(e =>
+        {
+            e.HasKey(n => n.Id);
+            e.Property(n => n.Id).HasDefaultValueSql("gen_random_uuid()");
+            e.Property(n => n.Type).HasMaxLength(50).IsRequired();
+            e.Property(n => n.Title).HasMaxLength(150).IsRequired();
+            e.Property(n => n.Message).HasMaxLength(500).IsRequired();
+            e.Property(n => n.Payload).HasColumnType("jsonb");
+            e.Property(n => n.CreatedAt).HasDefaultValueSql("now()");
+            e.HasOne(n => n.User).WithMany().HasForeignKey(n => n.UserId).IsRequired(false);
         });
     }
 }

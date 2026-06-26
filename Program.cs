@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using StockLinkApi.Data;
 using StockLinkApi.Endpoints;
+using StockLinkApi.Hubs;
 using StockLinkApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,8 +18,17 @@ if (builder.Configuration.GetValue<bool>("UseMockVision"))
 else
     builder.Services.AddHttpClient<IGeminiVisionService, GeminiVisionService>();
 
+builder.Services.AddScoped<INotificationService, NotificationService>();
+
+builder.Services.AddSignalR();
+
+// AllowCredentials + SetIsOriginAllowed requerido por SignalR (no compatible con AllowAnyOrigin)
 builder.Services.AddCors(opt =>
-    opt.AddDefaultPolicy(p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+    opt.AddDefaultPolicy(p => p
+        .SetIsOriginAllowed(_ => true)
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials()));
 
 builder.Services.ConfigureHttpJsonOptions(opt =>
     opt.SerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase);
@@ -26,6 +36,8 @@ builder.Services.ConfigureHttpJsonOptions(opt =>
 var app = builder.Build();
 
 app.UseCors();
+
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 if (app.Environment.IsDevelopment())
 {
@@ -39,5 +51,6 @@ ReservationEndpoints.Map(app);
 StoreEndpoints.Map(app);
 VisionEndpoints.Map(app);
 DevEndpoints.Map(app);
+NotificationEndpoints.Map(app);
 
 app.Run();
